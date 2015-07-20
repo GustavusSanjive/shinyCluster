@@ -35,8 +35,35 @@ shinyServer(
                                       rownames(cluster1)<-cluster$x
                                       makeD3HeatMap(cluster1)  
                                         })  
+#======================================HeatMap2==========================================================================
 
-
+      makeHeatMap <- reactive({
+        testgroups<-subset(getTestgroup(), Norm_HR=="Other"|Norm_HR==input$checkpatient) ## Here the test groups are assigned from the 5 patient groups above. Can make this 2 variables called by the function. GSM number defines the patient.
+        MeanGroups<-dcast(testgroups,x~Norm_HR, value.var="value",mean)
+        Meancent<-merge(testgroups, MeanGroups, by.x="x",by.y="x")
+        Meancent<-transform(Meancent, MeanCentOther=value-Other)
+        Meancent$Group_GSM<-do.call(paste, c(Meancent[c("Norm_HR", "variable")], sep = "_"))
+        Meancent<-merge(Meancent, GeneChoice[[input$datasets]], by.x="x",by.y="PROBE")
+        Meancent$Gene_AffyID<-do.call(paste, c(Meancent[c("GENE.SYMBOL", "x")], sep = "_"))
+        subsetMeancent<-subset(Meancent, Norm_HR==input$checkpatient,row.names=FALSE)
+        cluster<-dcast(subsetMeancent, x~Group_GSM, value.var="MeanCentOther")
+        cluster1<- cluster %>% select(-x)
+        rownames(cluster1)<-cluster$x
+        pairs.breaks <- seq(from=input$lower,to=input$upper,length.out=257)
+        blue_red_bicluster<-heatmap.2(as.matrix(cluster1), col=bluered(256), dendrogram="both", 
+                                       trace="none", breaks=pairs.breaks)
+        
+        blue_red_bicluster
+  })
+  
+  
+  output$heatmap2 <- renderPlot({
+                                makeHeatMap()
+                                      })  
+  
+  
+  #================================Statistics==========================================================
+  
     output$probeset<-renderUI({data2<- GeneChoice[[ input$datasets ]]
                                data2$PROBE<-as.character(data2$PROBE)
                                checkboxGroupInput("checkprobe", "Choose probeset", choices=data2[ ,2], select=data2[1:2,2])})

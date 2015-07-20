@@ -2,7 +2,7 @@ library(shiny)
 
 shinyUI(fluidPage(
   
-  titlePanel("Make Cluster Data and Heat Map"),
+  titlePanel("Interactive Heat Maps"),
   
   fluidRow(),
   
@@ -25,6 +25,23 @@ shinyUI(fluidPage(
                d3heatmapOutput("heatmap") 
       ),   
   
+      
+      tabPanel("HeatMap2",
+               plotOutput("heatmap2"),
+               
+               
+               sliderInput("upper", label = h4("upper level of expression"),
+                                                 min = 0, max = 5, step = 0.1, value = 2),
+               
+               br(),
+               
+               sliderInput("lower", label = h4("lower level of expression"),
+                           min = -5, max = 0, step = 0.1, value = -2)
+               
+               
+      ),   
+      
+      
       
       tabPanel("Statistics", 
               uiOutput("probeset"), 
