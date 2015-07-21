@@ -33,7 +33,8 @@ shinyServer(
                                       cluster<-dcast(subsetMeancent, x~Group_GSM, value.var="MeanCentOther")
                                       cluster1<- cluster %>% select(-x)
                                       rownames(cluster1)<-cluster$x
-                                      makeD3HeatMap(cluster1)  
+                                      rbg <- maPalette(low="darkblue", high="red4", mid="grey", k=200)
+                                      bicluster<-d3heatmap(as.matrix(cluster1), color=rbg, dendrogram="both", scale="row", k_row=input$n_rows, k_col=input$n_cols)
                                         })  
 #======================================HeatMap2==========================================================================
 

@@ -19,8 +19,8 @@ library("d3heatmap", lib.loc="D:/R-3.1.0/library")
 
 makeD3HeatMap<-function (cluster1) {
   rbg <- maPalette(low="darkblue", high="red4", mid="grey", k=200)
-red_green_bicluster<-d3heatmap(as.matrix(cluster1), color=rbg, dendrogram="both", scale="row", k_row=3, k_col=3)
-  red_green_bicluster 
+  bicluster<-d3heatmap(as.matrix(cluster1), color=rbg, dendrogram="both", scale="row", k_row=3, k_col=3)
+  bicluster 
 }
 
 

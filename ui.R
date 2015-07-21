@@ -22,7 +22,16 @@ shinyUI(fluidPage(
       
       
       tabPanel("HeatMap",
-               d3heatmapOutput("heatmap") 
+               
+               sliderInput("n_rows", label = h4("Number of clusters (rows)"),
+                           min = 1, max = 6, step = 1, value = 3),
+               
+               br(),
+               
+               sliderInput("n_cols", label = h4("Number of clusters (columns)"),
+                           min = 1, max = 6, step = 1, value = 3),
+               
+               d3heatmapOutput("heatmap")
       ),   
   
       
