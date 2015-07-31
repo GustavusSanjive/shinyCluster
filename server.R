@@ -31,10 +31,9 @@ shinyServer(
                                       Meancent$Gene_AffyID<-do.call(paste, c(Meancent[c("GENE.SYMBOL", "x")], sep = "_"))
                                       subsetMeancent<-subset(Meancent, Norm_HR==input$checkpatient,row.names=FALSE)
                                       cluster<-dcast(subsetMeancent, x~Group_GSM, value.var="MeanCentOther")
-                                      cluster1<- cluster %>% select(-x)
+                                      cluster1<- cluster %>% dplyr::select(-x)
                                       rownames(cluster1)<-cluster$x
-                                      rbg <- maPalette(low="darkblue", high="red4", mid="grey", k=200)
-                                      bicluster<-d3heatmap(as.matrix(cluster1), color=rbg, dendrogram="both", scale="row", k_row=input$n_rows, k_col=input$n_cols)
+                                      makeD3HeatMap(cluster1)  
                                         })  
 #======================================HeatMap2==========================================================================
 
@@ -48,7 +47,7 @@ shinyServer(
         Meancent$Gene_AffyID<-do.call(paste, c(Meancent[c("GENE.SYMBOL", "x")], sep = "_"))
         subsetMeancent<-subset(Meancent, Norm_HR==input$checkpatient,row.names=FALSE)
         cluster<-dcast(subsetMeancent, x~Group_GSM, value.var="MeanCentOther")
-        cluster1<- cluster %>% select(-x)
+        cluster1<- cluster %>% dplyr::select(-x)
         rownames(cluster1)<-cluster$x
         pairs.breaks <- seq(from=input$lower,to=input$upper,length.out=257)
         blue_red_bicluster<-heatmap.2(as.matrix(cluster1), col=bluered(256), dendrogram="both", 
@@ -62,41 +61,142 @@ shinyServer(
                                 makeHeatMap()
                                       })  
   
+  output$bwplot_meancent<-renderPlot({testgroups<-subset(getTestgroup(), Norm_HR=="Other"|Norm_HR==input$checkpatient) ## Here the test groups are assigned from the 5 patient groups above. Can make this 2 variables called by the function. GSM number defines the patient.
+                MeanGroups<-dcast(testgroups,x~Norm_HR, value.var="value",mean)
+                Meancent<-merge(testgroups, MeanGroups, by.x="x",by.y="x")
+                Meancent<-transform(Meancent, MeanCentOther=value-Other)
+                Meancent$Group_GSM<-do.call(paste, c(Meancent[c("Norm_HR", "variable")], sep = "_"))
+                Meancent<-merge(Meancent, GeneChoice[[input$datasets]], by.x="x",by.y="PROBE")
+                Meancent$Gene_AffyID<-do.call(paste, c(Meancent[c("GENE.SYMBOL", "x")], sep = "_"))
+                subsetMeancent<-subset(Meancent, Norm_HR==input$checkpatient,row.names=FALSE)
+                bwplot(MeanCentOther~Norm_HR|Gene_AffyID, data=Meancent)
+                                        })
   
-  #================================Statistics==========================================================
   
-    output$probeset<-renderUI({data2<- GeneChoice[[ input$datasets ]]
-                               data2$PROBE<-as.character(data2$PROBE)
-                               checkboxGroupInput("checkprobe", "Choose probeset", choices=data2[ ,2], select=data2[1:2,2])})
+#================================Statistics==========================================================
+  
+  output$probeset<-renderUI({data2<- GeneChoice[[ input$datasets ]]
+  data2$PROBE<-as.character(data2$PROBE)
+  checkboxGroupInput("checkprobe", "Choose probeset", choices=data2[ ,2], select=data2[ ,2])})
+  
+  
+  output$checkdat<-renderPlot({testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
+  ggplot(data = testgroups, aes(x = x, y = value, fill = Norm_HR)) + geom_boxplot() 
+  ##+ coord_flip()
+                              })
+  
+  
+  output$Diagnostics <- renderPlot({
+    testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
+    ANOVA_residuals(testgroups)
+                                  })
+  
+  ##output$Tukey <- renderPlot({
+    ##testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
+    ##ANOVA_TukeyHSD(testgroups)   
+  ##})
+  
+  output$Summary <- renderTable({
+    testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
+    ANOVA_Summary(testgroups)   
+  })
+  
+  output$pval <- renderTable({
+    testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
+    ANOVA_pval(testgroups)   
+  })
+  
 
+  output$cookdist<-renderPlot({
+    testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
+    ANOVA_cooksd(testgroups) 
+  })
+  
+  output$Stdresid<-renderPlot({
+    testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
+    ANOVA_stdresiduals(testgroups)
+  })
+  
+  output$detect_out<-renderPlot({
+    testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
+    ANOVA_outlier(testgroups)
+  })
+#====================Genome Browser====================================    
  
-    output$checkdat<-renderPlot({testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
-                                  ggplot(data = testgroups, aes(x = x, y = value, fill = Norm_HR)) + geom_boxplot() + coord_flip()})
-
-
-    output$Diagnostics <- renderPlot({
-      testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
-      ANOVA_probes(testgroups)   
-      })  
-
-    output$Tukey <- renderPlot({
-      testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
-      ANOVA_TukeyHSD(testgroups)   
+    output$Gene_select<-renderUI({data2a<- GeneChoice[[ input$datasets ]]
+    data2a$GENE.SYMBOL<-as.character(data2a$GENE.SYMBOL)
+    gene_count<-as.data.frame(tally(~GENE.SYMBOL, data2a))
+    gene_count$Var1<-as.character(gene_count$Var1)
+    radioButtons("checkGene", "Choose Gene", choices=gene_count[ ,1], select=gene_count[1,1])
+                                  })
+    
+    AffyList2b<-reactive({geneKey<-input$checkGene
+      AffyList2<-AnnotationDbi::select(hgu133plus2.db, keys = geneKey, columns = "PROBEID", keytype ="SYMBOL")
+      Affy_Probeset<-AffyList2$PROBEID
       })
     
-    output$Summary <- renderTable({
-      testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
-      ANOVA_Summary(testgroups)   
+    returnBiomart<-reactive({geneText<-input$checkGene
+    geneText<-as.character(geneText)
+    r2 = getBM(attributes=c("ensembl_transcript_id","hgnc_symbol", "chromosome_name","start_position","end_position", "strand"),
+              filters=c("hgnc_symbol"),
+              values=list(geneText),mart=ensembl)})
+    
+    output$Biomart<-renderTable({r3<-returnBiomart()})
+    
+    chrloc<-reactive({r4<-returnBiomart()
+    r4<-r4[1,3]
+    r4<-paste("chr", r4, sep="")
+                    })
+    
+    chr_l<-reactive({r5<-returnBiomart()
+    r5<-r5[1,4]
+    r5<-as.numeric(r5)                })
+    
+    chr_h<-reactive({r6<-returnBiomart()
+    r6<-r6[1,5]
+    r6<-as.numeric(r6)                })
+    
+    output$chooseProbeset<-renderUI({probesets<-AffyList2b()
+      radioButtons("checkprobe_browser", "Choose probeset", choices=probesets)
       })
     
-    output$pval <- renderTable({
-      testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
-      ANOVA_pval(testgroups)   
-      })
-
+    
+    output$slider1<-renderUI({sliderInput("chr_location1", label = h4("chromosome location 1"),
+                min = chr_l(), max = chr_h(), step = 100, value = chr_l())})
+    
+    
+    output$slider2<-renderUI({sliderInput("chr_location2", label = h4("chromosome location 2"),
+                min = chr_l(), max = chr_h(), step = 100, value = chr_h())})
+    
+    chrom_probe<-reactive({ chr1<-chrloc()
+                            chr1<-as.character(chr1)
+                            subset(Probe_Seq_AffyIndices, L1==chr1&Probes==input$checkprobe_browser)
+                            })
+    
+    output$chrom_start<-renderUI({chrom_probe_df<-chrom_probe()
+                                  chrom_data<-chrom_probe_df["start"]
+                                  checkboxGroupInput("checkstart", "Choose probe start position/s", choices=chrom_data[ ,1], select=chrom_data[ ,1])
+                                  })
+    
+    output$chrom_table<-renderTable({chrom_probe()})
+    
+    output$chrom_plot<-renderPlot({chr<-chrloc()
+    chr<-as.character(chr)
+    from2=input$chr_location1
+    to2=input$chr_location2
+    ideoTrack <- IdeogramTrack(genome="hg18", chromosome=chr)
+    gtr <- GenomeAxisTrack()
+    txdb <- TxDb.Hsapiens.UCSC.hg18.knownGene
+    txTr <- GeneRegionTrack(txdb, genome="hg18", chromosome = chr)
+    startpos<- as.numeric(input$checkstart)
+    aTrack <- AnnotationTrack(start=startpos, width=25, chromosome = chr, strand="*", genome="hg18", name = "probe details", stacking = "squish")##id maps onto row names of data matrix RMANormProbe_948
+    Gviz::plotTracks(c(ideoTrack, gtr, aTrack, txTr), showId = TRUE, showExonId=FALSE, from=from2, to=to2)
+    })
+  
+    
 #====================== Power test ====================================    
     output$mPower <- renderPlot({
-      args <- list()
+      args <- list() 
       args$mu  <- input$mu
       args$sigma <- input$sigma
       args$n  <- input$n

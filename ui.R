@@ -22,16 +22,7 @@ shinyUI(fluidPage(
       
       
       tabPanel("HeatMap",
-               
-               sliderInput("n_rows", label = h4("Number of clusters (rows)"),
-                           min = 1, max = 6, step = 1, value = 3),
-               
-               br(),
-               
-               sliderInput("n_cols", label = h4("Number of clusters (columns)"),
-                           min = 1, max = 6, step = 1, value = 3),
-               
-               d3heatmapOutput("heatmap")
+               d3heatmapOutput("heatmap") 
       ),   
   
       
@@ -45,20 +36,34 @@ shinyUI(fluidPage(
                br(),
                
                sliderInput("lower", label = h4("lower level of expression"),
-                           min = -5, max = 0, step = 0.1, value = -2)
+                           min = -5, max = 0, step = 0.1, value = -2),
+               plotOutput("bwplot_meancent")
                
                
       ),   
       
-      
+      tabPanel("Genome Browser",
+               
+               uiOutput("Gene_select"),
+               uiOutput("chooseProbeset"),
+               tableOutput("Biomart"),
+               tableOutput("chrom_table"),
+               uiOutput("slider1"),
+               uiOutput("slider2"),
+               plotOutput("chrom_plot"),
+               uiOutput("chrom_start")
+      ),
       
       tabPanel("Statistics", 
               uiOutput("probeset"), 
               plotOutput("checkdat"), 
-              plotOutput("Diagnostics"), 
+              plotOutput("Diagnostics"),
+              plotOutput("Stdresid"),
+              plotOutput("cookdist"),
+              plotOutput("detect_out"),
               tableOutput("Summary"), 
-              tableOutput("pval"), 
-              plotOutput("Tukey") 
+              tableOutput("pval") 
+              ##plotOutput("Tukey") 
       ),
       
       tabPanel( "Test Power",

@@ -1,16 +1,3 @@
-library("matrixStats", lib.loc="D:/R-3.1.0/library")
-library("mosaic", lib.loc="D:/R-3.1.0/library")
-library("dendextend", lib.loc="D:/R-3.1.0/library")
-library("scales", lib.loc="D:/R-3.1.0/library")
-library("colorspace", lib.loc="D:/R-3.1.0/library")
-library("gplots", lib.loc="D:/R-3.1.0/library")
-library("dplyr", lib.loc="D:/R-3.1.0/library")
-library("reshape2", lib.loc="D:/R-3.1.0/library")
-library("grid", lib.loc="D:/R-3.1.0/library")
-library("gridExtra", lib.loc="D:/R-3.1.0/library")
-library("RColorBrewer", lib.loc="D:/R-3.1.0/library")
-library("marray", lib.loc="D:/R-3.1.0/library")
-library("d3heatmap", lib.loc="D:/R-3.1.0/library")
 
 
 #================ The function that generates heatmap ===================== 
@@ -19,8 +6,8 @@ library("d3heatmap", lib.loc="D:/R-3.1.0/library")
 
 makeD3HeatMap<-function (cluster1) {
   rbg <- maPalette(low="darkblue", high="red4", mid="grey", k=200)
-  bicluster<-d3heatmap(as.matrix(cluster1), color=rbg, dendrogram="both", scale="row", k_row=3, k_col=3)
-  bicluster 
+red_green_bicluster<-d3heatmap(as.matrix(cluster1), color=rbg, dendrogram="both", scale="row", k_row=3, k_col=3)
+  red_green_bicluster 
 }
 
 
@@ -28,9 +15,26 @@ meltCluster<-function(cluster1){
   cluster1<-mutate(cluster1, probes=rownames(cluster1))
   melt(cluster1)}
 
-ANOVA_probes<-function(cluster1){
+ANOVA_residuals<-function(cluster1){
   mod<-lm(value ~ x*Norm_HR, data=cluster1)
-  mplot(mod, which=c(1,2,7), multiplot = TRUE, ncol=3)}
+  cluster1$M1.Fit = fitted(mod)
+  cluster1$M1.Resid = resid(mod)
+  ggplot(cluster1, aes(x=M1.Fit, y=M1.Resid)) + stat_smooth() + geom_point(aes(colour=x)) + xlab("Fitted Values") + ylab("Residuals") +facet_wrap( ~ Norm_HR)}
+
+ANOVA_stdresiduals<-function(cluster1){
+  mod<-lm(value ~ x*Norm_HR, data=cluster1)
+  cluster2<-fortify(mod)
+  ggplot(cluster2, aes(x=.fitted, y=.stdresid, size=.cooksd)) + stat_smooth() + geom_point(aes(colour=x)) + xlab("Fitted Values") + ylab("StdResiduals") +facet_wrap( ~ Norm_HR)}
+
+ANOVA_outlier<-function(cluster1){
+  mod<-lm(value ~ x*Norm_HR, data=cluster1)
+  cluster2<-fortify(mod)
+  ggplot(cluster2, aes(x=.hat, y=.stdresid, size=.cooksd, label = x)) + geom_text(aes(label=x),hjust=0, vjust=0) + geom_point(aes(colour=x)) + xlab("Leverage") + ylab("StdResiduals")}
+
+ANOVA_cooksd<-function(cluster1){
+  mod<-lm(value ~ x*Norm_HR, data=cluster1)
+  plot(mod, which=4)
+                                 }
 
 ANOVA_TukeyHSD<-function(cluster1){
   mod<-lm(value ~ x*Norm_HR, data=cluster1)
