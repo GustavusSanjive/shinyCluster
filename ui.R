@@ -62,7 +62,8 @@ shinyUI(fluidPage(
               plotOutput("cookdist"),
               plotOutput("detect_out"),
               tableOutput("Summary"), 
-              tableOutput("pval") 
+              tableOutput("pval"),
+              tableOutput("favstats")
               ##plotOutput("Tukey") 
       ),
       

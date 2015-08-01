@@ -121,6 +121,13 @@ shinyServer(
     testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
     ANOVA_outlier(testgroups)
   })
+  
+  output$favstats<-renderTable({
+    testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
+    favstats(value~x|Norm_HR, data=testgroups)
+  })
+  
+  
 #====================Genome Browser====================================    
  
     output$Gene_select<-renderUI({data2a<- GeneChoice[[ input$datasets ]]
