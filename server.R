@@ -75,72 +75,76 @@ shinyServer(
   
 #================================Statistics==========================================================
   
-  output$probeset<-renderUI({data2<- GeneChoice[[ input$datasets ]]
-  data2$PROBE<-as.character(data2$PROBE)
-  checkboxGroupInput("checkprobe", "Choose probeset", choices=data2[ ,2], select=data2[ ,2])})
   
+  output$probeset<-renderUI({data2<- GeneChoice[[ input$datasets ]]
+    data2$PROBE<-as.character(data2$PROBE)
+    checkboxGroupInput("checkprobe", "Choose probeset", choices=data2[ ,2], select=data2[ ,2])})
+  
+  mydataset<-reactive({
+    identifyprobe<-input$checkprobe
+    testgroups<-subset(getTestgroup(), Norm_HR=="Other"|Norm_HR==input$checkpatient) ## Here the test groups are assigned from the 5 patient groups above. Can make this 2 variables called by the function. GSM number defines the patient.
+    testgroups_dcast<-dcast(testgroups, variable~x, value.var="value" )
+    colnames(testgroups_dcast)[1]<-"GSM"
+    GSMnames<-testgroups_dcast$GSM
+    testgroups_dcast2<-testgroups_dcast[identifyprobe]
+    testgroups_dcast2$GSM<-GSMnames
+    testgroups_melt<-melt(testgroups_dcast2)
+    testgroups_ALL<-merge(testgroups_melt, ALL_groups, by.x= "GSM", by.y = "Var2")
+  })
   
   output$checkdat<-renderPlot({
-    dataset<-as.data.frame(getTestgroup())
-    testgroups<-subset(dataset, x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
-    ggplot(data = testgroups, aes(x = x, y = value, fill = Norm_HR)) + geom_boxplot() 
+    testgroups<-mydataset()
+    ggplot(data = testgroups, aes(x = variable, y = value, fill = Norm_HR)) + geom_boxplot() 
   ##+ coord_flip()
                               })
   
   
   output$Diagnostics <- renderPlot({
-    dataset<-as.data.frame(getTestgroup())
-    testgroups<-subset(dataset, x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
-    ANOVA_residuals(testgroups)
+    testgroups_ALL<-mydataset()
+    ANOVA_residuals(testgroups_ALL)
                                   })
   
   ##output$Tukey <- renderPlot({
-    ##testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
-    ##ANOVA_TukeyHSD(testgroups)   
+    ##testgroups_ALL<-mydataset()
+    ##ANOVA_TukeyHSD(testgroups_ALL)   
   ##})
   
   output$Summary <- renderTable({
-    dataset<-as.data.frame(getTestgroup())
-    testgroups<-subset(dataset, x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
-    ANOVA_Summary(testgroups)   
+    testgroups_ALL<-mydataset()
+    ANOVA_Summary(testgroups_ALL)   
   })
   
   output$pval <- renderTable({
-    dataset<-as.data.frame(getTestgroup())
-    testgroups<-subset(dataset, x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
-    ANOVA_pval(testgroups)   
+    testgroups_ALL<-mydataset()
+    ANOVA_pval(testgroups_ALL)   
   })
   
 
   output$cookdist<-renderPlot({
-    dataset<-as.data.frame(getTestgroup())
-    testgroups<-subset(dataset, x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
-    ANOVA_cooksd(testgroups) 
+    testgroups_ALL<-mydataset()
+    ANOVA_cooksd(testgroups_ALL) 
   })
   
   output$Stdresid<-renderPlot({
-    dataset<-as.data.frame(getTestgroup())
-    testgroups<-subset(dataset, x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
-    ANOVA_stdresiduals(testgroups)
+    testgroups_ALL<-mydataset()
+    ANOVA_stdresiduals(testgroups_ALL)
   })
   
   output$detect_out<-renderPlot({
-    dataset<-as.data.frame(getTestgroup())
-    testgroups<-subset(dataset, x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
-    ANOVA_outlier(testgroups)
+    testgroups_ALL<-mydataset()
+    ANOVA_outlier(testgroups_ALL)
   })
   
   output$meanvals<-renderTable({
-    dataset<-as.data.frame(getTestgroup())
-    testgroups<-subset(dataset, x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
-    dcast(testgroups, x~Norm_HR, value.var="value", mean)
+    testgroups_ALL<-mydataset()
+    dcast(testgroups_ALL, variable~Norm_HR, value.var="value", mean)
   })
   
   output$samplesize<-renderTable({
-    dataset<-as.data.frame(getTestgroup())
-    testgroups<-subset(dataset, x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
-    dcast(testgroups, x~Norm_HR, value.var="value", n_distinct)
+    testgroups_ALL<-mydataset()
+    dcast(testgroups_ALL, variable~Norm_HR, value.var="value", n_distinct)
   })
+  
   
   
 #====================Genome Browser====================================    

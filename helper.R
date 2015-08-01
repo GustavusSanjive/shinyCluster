@@ -16,36 +16,36 @@ meltCluster<-function(cluster1){
   melt(cluster1)}
 
 ANOVA_residuals<-function(cluster1){
-  mod<-lm(value ~ x*Norm_HR, data=cluster1)
+  mod<-lm(value ~ variable*Norm_HR, data=cluster1)
   cluster1$M1.Fit = fitted(mod)
   cluster1$M1.Resid = resid(mod)
-  ggplot(cluster1, aes(x=M1.Fit, y=M1.Resid)) + stat_smooth() + geom_point(aes(colour=x)) + xlab("Fitted Values") + ylab("Residuals") +facet_wrap( ~ Norm_HR)}
+  ggplot(cluster1, aes(x=M1.Fit, y=M1.Resid)) + stat_smooth() + geom_point(aes(colour=variable)) + xlab("Fitted Values") + ylab("Residuals") +facet_wrap( ~ Norm_HR)}
 
 ANOVA_stdresiduals<-function(cluster1){
-  mod<-lm(value ~ x*Norm_HR, data=cluster1)
+  mod<-lm(value ~ variable*Norm_HR, data=cluster1)
   cluster2<-fortify(mod)
-  ggplot(cluster2, aes(x=.fitted, y=.stdresid, size=.cooksd)) + stat_smooth() + geom_point(aes(colour=x)) + xlab("Fitted Values") + ylab("StdResiduals") +facet_wrap( ~ Norm_HR)}
+  ggplot(cluster2, aes(x=.fitted, y=.stdresid, size=.cooksd)) + stat_smooth() + geom_point(aes(colour=variable)) + xlab("Fitted Values") + ylab("StdResiduals") +facet_wrap( ~ Norm_HR)}
 
 ANOVA_outlier<-function(cluster1){
-  mod<-lm(value ~ x*Norm_HR, data=cluster1)
+  mod<-lm(value ~ variable*Norm_HR, data=cluster1)
   cluster2<-fortify(mod)
-  ggplot(cluster2, aes(x=.hat, y=.stdresid, size=.cooksd, label = x)) + geom_text(aes(label=x),hjust=0, vjust=0) + geom_point(aes(colour=x)) + xlab("Leverage") + ylab("StdResiduals")}
+  ggplot(cluster2, aes(x=.hat, y=.stdresid, size=.cooksd, label = variable)) + geom_text(aes(label=variable),hjust=0, vjust=0) + geom_point(aes(colour=variable)) + xlab("Leverage") + ylab("StdResiduals")}
 
 ANOVA_cooksd<-function(cluster1){
-  mod<-lm(value ~ x*Norm_HR, data=cluster1)
+  mod<-lm(value ~ variable*Norm_HR, data=cluster1)
   plot(mod, which=4)
                                  }
 
 ANOVA_TukeyHSD<-function(cluster1){
-  mod<-lm(value ~ x*Norm_HR, data=cluster1)
+  mod<-lm(value ~ variable*Norm_HR, data=cluster1)
   mplot(TukeyHSD(mod), system="ggplot2")}
 
 ANOVA_Summary<-function(cluster1){
-  mod<-lm(value ~ x*Norm_HR, data=cluster1)
+  mod<-lm(value ~ variable*Norm_HR, data=cluster1)
   summary(mod)}
 
 ANOVA_pval<-function(cluster1){
-  mod<-lm(value ~ x*Norm_HR, data=cluster1)
+  mod<-lm(value ~ variable*Norm_HR, data=cluster1)
   anova(mod)}
 
  
