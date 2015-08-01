@@ -122,9 +122,14 @@ shinyServer(
     ANOVA_outlier(testgroups)
   })
   
-  output$favstats<-renderTable({
+  output$meanvals<-renderTable({
     testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
-    favstats(value~x|Norm_HR, data=testgroups)
+    dcast(testgroups, x~Norm_HR, value.var="value", mean)
+  })
+  
+  output$samplesize<-renderTable({
+    testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
+    dcast(testgroups, x~Norm_HR, value.var="value", n_distinct)
   })
   
   

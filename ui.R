@@ -63,7 +63,8 @@ shinyUI(fluidPage(
               plotOutput("detect_out"),
               tableOutput("Summary"), 
               tableOutput("pval"),
-              tableOutput("favstats")
+              tableOutput("meanvals"),
+              tableOutput("samplesize")
               ##plotOutput("Tukey") 
       ),
       
