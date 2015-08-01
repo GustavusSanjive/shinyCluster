@@ -80,14 +80,17 @@ shinyServer(
   checkboxGroupInput("checkprobe", "Choose probeset", choices=data2[ ,2], select=data2[ ,2])})
   
   
-  output$checkdat<-renderPlot({testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
-  ggplot(data = testgroups, aes(x = x, y = value, fill = Norm_HR)) + geom_boxplot() 
+  output$checkdat<-renderPlot({
+    dataset<-as.data.frame(getTestgroup())
+    testgroups<-subset(dataset, x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
+    ggplot(data = testgroups, aes(x = x, y = value, fill = Norm_HR)) + geom_boxplot() 
   ##+ coord_flip()
                               })
   
   
   output$Diagnostics <- renderPlot({
-    testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
+    dataset<-as.data.frame(getTestgroup())
+    testgroups<-subset(dataset, x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
     ANOVA_residuals(testgroups)
                                   })
   
@@ -97,38 +100,45 @@ shinyServer(
   ##})
   
   output$Summary <- renderTable({
-    testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
+    dataset<-as.data.frame(getTestgroup())
+    testgroups<-subset(dataset, x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
     ANOVA_Summary(testgroups)   
   })
   
   output$pval <- renderTable({
-    testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
+    dataset<-as.data.frame(getTestgroup())
+    testgroups<-subset(dataset, x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
     ANOVA_pval(testgroups)   
   })
   
 
   output$cookdist<-renderPlot({
-    testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
+    dataset<-as.data.frame(getTestgroup())
+    testgroups<-subset(dataset, x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
     ANOVA_cooksd(testgroups) 
   })
   
   output$Stdresid<-renderPlot({
-    testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
+    dataset<-as.data.frame(getTestgroup())
+    testgroups<-subset(dataset, x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
     ANOVA_stdresiduals(testgroups)
   })
   
   output$detect_out<-renderPlot({
-    testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
+    dataset<-as.data.frame(getTestgroup())
+    testgroups<-subset(dataset, x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
     ANOVA_outlier(testgroups)
   })
   
   output$meanvals<-renderTable({
-    testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
+    dataset<-as.data.frame(getTestgroup())
+    testgroups<-subset(dataset, x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
     dcast(testgroups, x~Norm_HR, value.var="value", mean)
   })
   
   output$samplesize<-renderTable({
-    testgroups<-subset(getTestgroup(), x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
+    dataset<-as.data.frame(getTestgroup())
+    testgroups<-subset(dataset, x==input$checkprobe & (Norm_HR==input$checkpatient|Norm_HR=="Other"))
     dcast(testgroups, x~Norm_HR, value.var="value", n_distinct)
   })
   
