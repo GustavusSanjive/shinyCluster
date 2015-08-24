@@ -44,7 +44,6 @@ GeneChoice <- list("NULL" = NULL,
 ALL_groups <- read.csv("D:/HR_Other_ALL_Groups.csv") ##This has 5 patient groups (MLL, Normal, PHpos, Other, E2A_PBX)
 Group_count<-as.data.frame(tally(~Norm_HR, data=ALL_groups))
 Group_count$Var1<-as.character(Group_count$Var1)##Group counts
-bm <- useMart(host = "may2009.archive.ensembl.org",biomart = "ENSEMBL_MART_ENSEMBL", dataset = "hsapiens_gene_ensembl")
 ensembl = useMart("ENSEMBL_MART_ENSEMBL",
                   dataset="hsapiens_gene_ensembl",
                   host="may2009.archive.ensembl.org",
