@@ -83,13 +83,10 @@ shinyServer(
   mydataset<-reactive({
     identifyprobe<-input$checkprobe
     testgroups<-subset(getTestgroup(), Norm_HR=="Other"|Norm_HR==input$checkpatient) ## Here the test groups are assigned from the 5 patient groups above. Can make this 2 variables called by the function. GSM number defines the patient.
-    testgroups_dcast<-dcast(testgroups, variable~x, value.var="value" )
-    colnames(testgroups_dcast)[1]<-"GSM"
-    GSMnames<-testgroups_dcast$GSM
-    testgroups_dcast2<-testgroups_dcast[identifyprobe]
-    testgroups_dcast2$GSM<-GSMnames
-    testgroups_melt<-melt(testgroups_dcast2)
-    testgroups_ALL<-merge(testgroups_melt, ALL_groups, by.x= "GSM", by.y = "Var2")
+    testgroups_subset<-subset(testgroups, x %in% identifyprobe)## This allows for subseeting based on a list for rows
+    colnames(testgroups_subset)[1]<-"GSM"
+    colnames(testgroups_subset)[2]<-"variable"
+    testgroups_ALL<-testgroups_subset
   })
   
   output$checkdat<-renderPlot({
@@ -187,11 +184,11 @@ shinyServer(
       })
     
     
-    output$slider1<-renderUI({sliderInput("chr_location1", label = h4("chromosome location 1"),
+    output$slider1<-renderUI({sliderInput("chr_location1", label = h4("chromosome start"),
                 min = chr_l(), max = chr_h(), step = 100, value = chr_l())})
     
     
-    output$slider2<-renderUI({sliderInput("chr_location2", label = h4("chromosome location 2"),
+    output$slider2<-renderUI({sliderInput("chr_location2", label = h4("chromosome end"),
                 min = chr_l(), max = chr_h(), step = 100, value = chr_h())})
     
     chrom_probe<-reactive({ chr1<-chrloc()
