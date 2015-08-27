@@ -69,7 +69,13 @@ shinyServer(
                 Meancent<-merge(Meancent, GeneChoice[[input$datasets]], by.x="x",by.y="PROBE")
                 Meancent$Gene_AffyID<-do.call(paste, c(Meancent[c("GENE.SYMBOL", "x")], sep = "_"))
                 subsetMeancent<-subset(Meancent, Norm_HR==input$checkpatient,row.names=FALSE)
-                bwplot(MeanCentOther~Norm_HR|Gene_AffyID, data=Meancent)
+                ##bwplot(MeanCentOther~Norm_HR|Gene_AffyID, data=Meancent)
+                ggplot(data = Meancent, aes(x = Norm_HR, y = MeanCentOther, fill = Norm_HR)) + 
+                  geom_boxplot() +
+                  stat_summary(aes(group=1), fun.y = mean, fun.ymin = function(x) mean(x) - sd(x), fun.ymax = function(x) mean(x) + sd(x), geom = "pointrange", colour="blue") +
+                  stat_summary(aes(group=1), fun.y = mean, geom = "line") +
+                  facet_wrap(~Gene_AffyID)+
+                  coord_flip()
                                         })
   
   
@@ -184,11 +190,11 @@ shinyServer(
       })
     
     
-    output$slider1<-renderUI({sliderInput("chr_location1", label = h4("chromosome start"),
+    output$slider1<-renderUI({sliderInput("chr_location1", label = h4("chromosome location 1"),
                 min = chr_l(), max = chr_h(), step = 100, value = chr_l())})
     
     
-    output$slider2<-renderUI({sliderInput("chr_location2", label = h4("chromosome end"),
+    output$slider2<-renderUI({sliderInput("chr_location2", label = h4("chromosome location 2"),
                 min = chr_l(), max = chr_h(), step = 100, value = chr_h())})
     
     chrom_probe<-reactive({ chr1<-chrloc()
