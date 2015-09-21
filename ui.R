@@ -66,27 +66,9 @@ shinyUI(fluidPage(
               tableOutput("meanvals"),
               tableOutput("samplesize")
               ##plotOutput("Tukey") 
-      ),
-      
-      tabPanel( "Test Power",
-                
-                sliderInput("mu", label = h4("Mu"),
-                            min = 5, max = 7, step = 0.1, value = 6),
-                
-                br(),
-                
-                sliderInput("sigma", label = h4("Sigma"),
-                            min = 0, max = 4, step = 0.1, value = 2),
-                
-                br(),
-                
-                sliderInput("n", label = h4("N sample points"),
-                            min = 5, max = 305, step = 5, value = 50),
-                
-                br(),
-                
-                plotOutput("mPower")       
       )
+      
+      
       
         )
             

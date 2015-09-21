@@ -30,7 +30,7 @@ library("TxDb.Hsapiens.UCSC.hg18.knownGene", lib.loc="D:/R-3.1.0/library")
 library("biomaRt", lib.loc="D:/R-3.1.0/library")
 require(hgu133plus2.db)
 
-## datasets
+## datasets loaded as lists
 Probe_Seq_AffyIndices<- readRDS("D:/chromosome_mapping_HGU133plus2_BothStrands.rda")
 gExprs<-readRDS("D:/gExprs.rda")
 Gene1<-read.csv("D:/REACTOME_CD28_DEPENDENT_VAV1_PATHWAY_PHpos.csv")
@@ -44,7 +44,6 @@ GeneChoice <- list("NULL" = NULL,
 ALL_groups <- read.csv("D:/HR_Other_ALL_Groups.csv") ##This has 5 patient groups (MLL, Normal, PHpos, Other, E2A_PBX)
 Group_count<-as.data.frame(tally(~Norm_HR, data=ALL_groups))
 Group_count$Var1<-as.character(Group_count$Var1)##Group counts
-bm <- useMart(host = "may2009.archive.ensembl.org",biomart = "ENSEMBL_MART_ENSEMBL", dataset = "hsapiens_gene_ensembl")
 ensembl = useMart("ENSEMBL_MART_ENSEMBL",
                   dataset="hsapiens_gene_ensembl",
                   host="may2009.archive.ensembl.org",
@@ -52,5 +51,5 @@ ensembl = useMart("ENSEMBL_MART_ENSEMBL",
                   archive=FALSE)
 
 
-prior <- list( "Uniform" = 1, "Beta" = 2)
+
 

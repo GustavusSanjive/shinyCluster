@@ -69,7 +69,13 @@ shinyServer(
                 Meancent<-merge(Meancent, GeneChoice[[input$datasets]], by.x="x",by.y="PROBE")
                 Meancent$Gene_AffyID<-do.call(paste, c(Meancent[c("GENE.SYMBOL", "x")], sep = "_"))
                 subsetMeancent<-subset(Meancent, Norm_HR==input$checkpatient,row.names=FALSE)
-                bwplot(MeanCentOther~Norm_HR|Gene_AffyID, data=Meancent)
+                ##bwplot(MeanCentOther~Norm_HR|Gene_AffyID, data=Meancent)
+                ggplot(data = Meancent, aes(x = Norm_HR, y = MeanCentOther, fill = Norm_HR)) + 
+                  geom_boxplot() +
+                  stat_summary(aes(group=1), fun.y = mean, fun.ymin = function(x) mean(x) - sd(x), fun.ymax = function(x) mean(x) + sd(x), geom = "pointrange", colour="blue") +
+                  stat_summary(aes(group=1), fun.y = mean, geom = "line") +
+                  facet_wrap(~Gene_AffyID)+
+                  coord_flip()
                                         })
   
   
@@ -83,13 +89,10 @@ shinyServer(
   mydataset<-reactive({
     identifyprobe<-input$checkprobe
     testgroups<-subset(getTestgroup(), Norm_HR=="Other"|Norm_HR==input$checkpatient) ## Here the test groups are assigned from the 5 patient groups above. Can make this 2 variables called by the function. GSM number defines the patient.
-    testgroups_dcast<-dcast(testgroups, variable~x, value.var="value" )
-    colnames(testgroups_dcast)[1]<-"GSM"
-    GSMnames<-testgroups_dcast$GSM
-    testgroups_dcast2<-testgroups_dcast[identifyprobe]
-    testgroups_dcast2$GSM<-GSMnames
-    testgroups_melt<-melt(testgroups_dcast2)
-    testgroups_ALL<-merge(testgroups_melt, ALL_groups, by.x= "GSM", by.y = "Var2")
+    testgroups_subset<-subset(testgroups, x %in% identifyprobe)## This allows for subseeting based on a list for rows
+    colnames(testgroups_subset)[1]<-"GSM"
+    colnames(testgroups_subset)[2]<-"variable"
+    testgroups_ALL<-testgroups_subset
   })
   
   output$checkdat<-renderPlot({
@@ -218,16 +221,5 @@ shinyServer(
     aTrack <- AnnotationTrack(start=startpos, width=25, chromosome = chr, strand="*", genome="hg18", name = "probe details", stacking = "squish")##id maps onto row names of data matrix RMANormProbe_948
     Gviz::plotTracks(c(ideoTrack, gtr, aTrack, txTr), showId = TRUE, showExonId=FALSE, from=from2, to=to2)
     })
-  
-    
-#====================== Power test ====================================    
-    output$mPower <- renderPlot({
-      args <- list() 
-      args$mu  <- input$mu
-      args$sigma <- input$sigma
-      args$n  <- input$n
-      do.call(makePower, args)
-    })
-    
   }
 )
